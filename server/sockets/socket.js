@@ -14,16 +14,18 @@ io.on('connection', (client) => {
             });
         }
         client.join(data.sala);
-        let persona = usuarios.agregarPersona(client.id, data.nombre, data.sala);
-        console.log('Lista de usuarios', usuarios.getPersonasPorSala(persona.sala));
-        client.broadcast.to(persona.sala).emit('listaPersonas', usuarios.getPersonasPorSala(persona.sala));
-        callback(usuarios.getPersonasPorSala(persona.sala));
+        let usuario = usuarios.agregarPersona(client.id, data.nombre, data.sala);
+        console.log('Lista de usuarios', usuarios.getPersonasPorSala(usuario.sala));
+        client.broadcast.to(usuario.sala).emit('listaPersonas', usuarios.getPersonasPorSala(usuario.sala));
+        client.broadcast.to(usuario.sala).emit('crearMensaje', crearMensaje('Administrador', `${usuario.nombre} ingresó al chat`));
+        callback(usuarios.getPersonasPorSala(usuario.sala));
     });
 
-    client.on('crearMensaje', (data) => {
+    client.on('crearMensaje', (data,callback) => {
         let usuario = usuarios.getPersona(client.id);
         let mensaje = crearMensaje(usuario.nombre, data.mensaje);
         client.broadcast.to(data.sala).emit('crearMensaje', mensaje);
+        callback(mensaje);
     });
 
     client.on('disconnect', () => {
